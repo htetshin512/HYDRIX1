@@ -1,0 +1,1646 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#223A5E">
+  <meta name="description" content="Explore Myanmar's Central Dry Zone, nine reference towns, water challenges and drought preparedness.">
+  <title>Myanmar's Dry Zone | HYDRIX</title>
+
+  <link rel="icon" href="images/logo.png" type="image/png">
+
+  <!-- Bootstrap -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+
+  <!-- Leaflet -->
+  <link href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css" rel="stylesheet">
+
+  <!-- Existing HYDRIX styles -->
+  <link href="common.css" rel="stylesheet">
+  <link href="dryzone.css" rel="stylesheet">
+
+  <style>
+    /* WATER SCARCITY ATLAS */
+
+    .dz-atlas {
+      background: #f4f7fa;
+    }
+
+    .dz-atlas-heading {
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+      gap: 36px;
+      margin-bottom: 34px;
+    }
+
+    .dz-atlas-heading > div {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .dz-atlas-heading > p {
+      max-width: 420px;
+      color: #617184;
+      line-height: 1.8;
+      margin: 0;
+    }
+
+    .dz-atlas-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 305px;
+      background: #fff;
+      border: 1px solid #dce5ed;
+      border-radius: 18px;
+      overflow: hidden;
+    }
+
+    .dz-atlas-map-wrap {
+      min-width: 0;
+      position: relative;
+      background: #e5edf3;
+    }
+
+    #dryZoneMap {
+      width: 100%;
+      height: 570px;
+      z-index: 1;
+    }
+
+    .dz-atlas-error {
+      position: absolute;
+      inset: 20px;
+      z-index: 4;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 35px;
+      background: #e5edf3;
+      color: #223a5e;
+      font-size: 15px;
+      line-height: 1.8;
+    }
+
+    .dz-atlas-error[hidden] {
+      display: none;
+    }
+
+    .dz-atlas-sidebar {
+      padding: 24px;
+      border-left: 1px solid #dce5ed;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      min-width: 0;
+    }
+
+    .dz-atlas-small {
+      font-size: 10px;
+      letter-spacing: 1.5px;
+      font-weight: 700;
+      color: #68798b;
+    }
+
+    .dz-atlas-filters {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 7px;
+    }
+
+    .dz-atlas-filter {
+      border: 1px solid #dbe4ec;
+      border-radius: 7px;
+      background: #fff;
+      color: #344a61;
+      padding: 10px 5px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: background .2s, color .2s;
+    }
+
+    .dz-atlas-filter:hover,
+    .dz-atlas-filter.active {
+      background: #223a5e;
+      border-color: #223a5e;
+      color: #fff;
+    }
+
+    .dz-atlas-count {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      border-bottom: 1px solid #e6edf2;
+      padding-bottom: 14px;
+    }
+
+    .dz-atlas-count strong {
+      font-size: 32px;
+      color: #223a5e;
+      font-weight: 500;
+    }
+
+    .dz-atlas-count span {
+      font-size: 10px;
+      letter-spacing: 1.1px;
+      color: #8795a3;
+    }
+
+    .dz-atlas-town-list {
+      max-height: 300px;
+      overflow-y: auto;
+      display: grid;
+      align-content: start;
+      gap: 5px;
+    }
+
+    .dz-atlas-town {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 6px;
+      padding: 12px;
+      border: 1px solid transparent;
+      background: #f5f8fa;
+      border-radius: 7px;
+      color: #243b52;
+      cursor: pointer;
+      text-align: left;
+    }
+
+    .dz-atlas-town:hover,
+    .dz-atlas-town.active {
+      background: #e7eff7;
+      border-color: #c3d6e8;
+    }
+
+    .dz-atlas-town span {
+      font-weight: 600;
+      font-size: 13px;
+    }
+
+    .dz-atlas-town small {
+      color: #73869a;
+      font-size: 11px;
+    }
+
+    .dz-atlas-disclaimer {
+      margin: auto 0 0;
+      color: #8291a0;
+      font-size: 11px;
+      line-height: 1.7;
+    }
+
+    .dz-atlas-popup h3 {
+      font-size: 17px;
+      margin: 5px 0 9px;
+      color: #223a5e;
+    }
+
+    .dz-atlas-popup small {
+      color: #71849a;
+      font-weight: 600;
+    }
+
+    .dz-atlas-popup p {
+      margin: 8px 0;
+      line-height: 1.5;
+      font-size: 12px;
+    }
+
+    .dz-atlas-popup a {
+      display: inline-block;
+      margin-top: 8px;
+      color: #315f91;
+      font-size: 12px;
+      font-weight: 700;
+      text-decoration: none;
+    }
+
+    .dz-atlas-popup a:hover {
+      text-decoration: underline;
+    }
+
+    @media (max-width: 991px) {
+      .dz-atlas-heading {
+        display: block;
+      }
+
+      .dz-atlas-heading > p {
+        max-width: 100%;
+        margin-top: 16px;
+      }
+
+      .dz-atlas-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .dz-atlas-sidebar {
+        border-left: 0;
+        border-top: 1px solid #dce5ed;
+      }
+
+      #dryZoneMap {
+        height: 400px;
+      }
+
+      .dz-atlas-town-list {
+        max-height: 230px;
+      }
+    }
+
+    @media (max-width: 576px) {
+      #dryZoneMap {
+        height: 340px;
+      }
+    }
+  </style>
+</head>
+
+<body class="dryzone-page">
+
+<!-- HEADER -->
+<header class="site-header">
+  <div class="nav-top">
+    <div class="container nav-top-inner">
+
+      <div class="social-links">
+        <a href="https://www.tiktok.com/@dreamworld_090?_r=1&amp;_t=ZN-9BPxIyuVe5u" target="_blank" rel="noopener noreferrer" aria-label="TikTok"><i class="bi bi-tiktok"></i></a>
+        <a href="https://discord.com/users/1201566254318759983" target="_blank" rel="noopener noreferrer" aria-label="Discord"><i class="bi bi-discord"></i></a>
+        <a href="https://www.facebook.com/win.lae.may.901302?mibextid=wwXIfr" target="_blank" rel="noopener noreferrer" aria-label="Facebook"><i class="bi bi-facebook"></i></a>
+        <a href="https://t.me/sleep_dreamer1" target="_blank" rel="noopener noreferrer" aria-label="Telegram"><i class="bi bi-telegram"></i></a>
+      </div>
+
+      <a href="index.html" class="brand">
+        <img src="images/logo.png" alt="HYDRIX logo" class="navbar-logo">
+        <span>HYDRIX</span>
+      </a>
+
+      <div class="header-tools">
+        <a href="contact.html" class="contact-btn">CONTACT US</a>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="nav-bottom">
+    <nav class="navbar navbar-expand-lg">
+      <div class="container">
+
+        <button
+          class="navbar-toggler mx-auto"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#mainMenu"
+          aria-controls="mainMenu"
+          aria-expanded="false"
+          aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="mainMenu">
+          <ul class="navbar-nav mx-auto">
+            <li class="nav-item"><a href="index.html" class="nav-link">HOME</a></li>
+            <li class="nav-item"><a href="drought.html" class="nav-link">DROUGHT</a></li>
+            <li class="nav-item"><a href="dryzone.html" class="nav-link">DRY ZONE</a></li>
+            <li class="nav-item"><a href="conservation.html" class="nav-link">WATER SAVING</a></li>
+            <li class="nav-item"><a href="preparedness.html" class="nav-link">PREPAREDNESS</a></li>
+            <li class="nav-item"><a href="faq.html" class="nav-link">FAQs</a></li>
+            <li class="nav-item"><a href="about.html" class="nav-link">ABOUT US</a></li>
+          </ul>
+        </div>
+
+      </div>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+  <!-- HERO -->
+  <section class="dz-hero" id="top">
+    <div class="container">
+
+      <div class="dz-hero-topline">
+        <span><i class="bi bi-circle-fill"></i> HYDRIX JOURNAL / 03</span>
+        <span>MYANMAR · WATER · ENVIRONMENT</span>
+      </div>
+
+      <div class="dz-hero-stage">
+        <div class="dz-hero-center">
+
+          <span class="dz-hero-kicker">
+            <i class="bi bi-droplet-half"></i>
+            THE CENTRAL DRY ZONE
+          </span>
+
+          <h1>The land<br>between <em>rains.</em></h1>
+
+          <p>
+            Discover the landscapes, seasonal rainfall, water challenges
+            and communities of Myanmar's Central Dry Zone.
+          </p>
+
+          <div class="dz-hero-topics">
+            <span>EXPLORE BY REGION</span>
+
+            <div class="dz-hero-regions">
+              <a href="#sagaing">Sagaing <i class="bi bi-arrow-up-right"></i></a>
+              <a href="#mandalay">Mandalay <i class="bi bi-arrow-up-right"></i></a>
+              <a href="#magway">Magway <i class="bi bi-arrow-up-right"></i></a>
+            </div>
+          </div>
+
+          <a href="#atlas" class="dz-hero-cta">
+            DISCOVER THE DRY ZONE
+            <i class="bi bi-arrow-down"></i>
+          </a>
+
+          <span class="dz-hero-hint">
+            9 REFERENCE TOWNS · 3 REGIONS · WATER AWARENESS
+          </span>
+        </div>
+      </div>
+
+      <div class="dz-hero-bottomline">
+        <span>AN EDUCATIONAL EXPLORATION OF CENTRAL MYANMAR</span>
+        <a href="#overview">LEARN ABOUT THE REGION <i class="bi bi-arrow-down"></i></a>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- REGIONAL OVERVIEW -->
+  <section class="dz-overview dz-space" id="overview">
+    <div class="container">
+
+      <div class="row align-items-center g-5">
+        <div class="col-lg-7">
+          <span class="dz-eyebrow">01 / THE REGIONAL CONTEXT</span>
+          <h2 class="dz-title">Understanding Myanmar's Central Dry Zone</h2>
+
+          <p>
+            Myanmar's Central Dry Zone lies in the interior of the country
+            and includes parts of Mandalay, Magway and Sagaing Regions.
+            It generally receives less rainfall than many other areas of Myanmar.
+          </p>
+
+          <p>
+            The Dry Zone is not a desert. Rainfall arrives mainly during
+            the monsoon, while the remaining months are considerably drier.
+            The amount and timing of rainfall vary between locations and years.
+          </p>
+
+          <p>
+            Water availability depends on more than rainfall.
+            Wells, reservoirs, rivers, irrigation systems and storage
+            facilities all influence how communities access water.
+          </p>
+
+          <a
+            href="https://www.themimu.info/special-interest-region/dry-zone"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="dz-text-link">
+            REGIONAL BACKGROUND: MIMU
+            <i class="bi bi-arrow-up-right"></i>
+          </a>
+        </div>
+
+        <div class="col-lg-5">
+          <figure class="dz-overview-photo">
+            <img
+              src="images/landscape.jpg"
+              alt="Landscape representing Myanmar's Central Dry Zone"
+              loading="lazy">
+            <figcaption>LANDSCAPES OF CENTRAL MYANMAR</figcaption>
+          </figure>
+        </div>
+      </div>
+
+      <div class="dz-stat-strip">
+        <div><strong>03</strong><span>REGIONS WITH DRY ZONE AREAS</span></div>
+        <div><strong>09</strong><span>REFERENCE TOWNS TO EXPLORE</span></div>
+        <div><strong>May–Oct</strong><span>GENERAL MONSOON PERIOD</span></div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- WATER SHORTAGE FACTORS -->
+  <section class="dz-causes dz-space" id="water-access">
+    <div class="container">
+
+      <div class="dz-section-intro">
+        <span class="dz-eyebrow">02 / WATER AVAILABILITY</span>
+        <h2 class="dz-title">Why Water Shortages Happen</h2>
+        <p>
+          Different communities experience different water challenges.
+          These three factors help explain why planning and water management matter.
+        </p>
+      </div>
+
+      <div class="row g-4">
+
+        <div class="col-lg-4 col-md-6">
+          <article class="dz-cause-card">
+            <span class="dz-card-number">01 / CLIMATE</span>
+            <i class="bi bi-cloud-sun"></i>
+            <h3>Uneven Rainfall</h3>
+            <p>
+              Most rainfall occurs during the monsoon months.
+              Delayed rain, long dry spells or unusually weak rainfall
+              can reduce soil moisture and affect agriculture.
+            </p>
+          </article>
+        </div>
+
+        <div class="col-lg-4 col-md-6">
+          <article class="dz-cause-card">
+            <span class="dz-card-number">02 / INFRASTRUCTURE</span>
+            <i class="bi bi-droplet-half"></i>
+            <h3>Water Supply & Storage</h3>
+            <p>
+              Communities depend on wells, ponds, rivers and reservoirs.
+              Poor maintenance, inadequate storage and limited
+              distribution systems can worsen shortages.
+            </p>
+          </article>
+        </div>
+
+        <div class="col-lg-4 col-md-6">
+          <article class="dz-cause-card">
+            <span class="dz-card-number">03 / DEMAND</span>
+            <i class="bi bi-people"></i>
+            <h3>Community Water Needs</h3>
+            <p>
+              Homes, schools, farms and businesses use water for different
+              purposes. Shortages can become more serious when demand
+              rises or available supplies are not managed carefully.
+            </p>
+          </article>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- INTERACTIVE MAP -->
+  <section class="dz-atlas dz-space" id="atlas">
+    <div class="container">
+
+      <div class="dz-atlas-heading">
+        <div>
+          <span class="dz-eyebrow">03 / INTERACTIVE MAP</span>
+          <h2 class="dz-title">Water Scarcity Atlas</h2>
+        </div>
+
+        <p>
+          Explore nine selected towns across Sagaing, Mandalay and Magway.
+          Select a location to learn about its water needs, possible
+          challenges and preparedness methods.
+        </p>
+      </div>
+
+      <div class="dz-atlas-layout">
+
+        <div class="dz-atlas-map-wrap">
+          <div
+            id="dryZoneMap"
+            aria-label="Interactive map of nine towns in Myanmar's Central Dry Zone">
+          </div>
+
+          <div id="atlasError" class="dz-atlas-error" hidden>
+            The interactive map could not load.
+            Please check your internet connection.
+            You can still select towns from the list.
+          </div>
+        </div>
+
+        <aside class="dz-atlas-sidebar">
+
+          <span class="dz-atlas-small">EXPLORE BY REGION</span>
+
+          <div class="dz-atlas-filters">
+            <button type="button" class="dz-atlas-filter active" data-region="all">All Towns</button>
+            <button type="button" class="dz-atlas-filter" data-region="Sagaing">Sagaing</button>
+            <button type="button" class="dz-atlas-filter" data-region="Mandalay">Mandalay</button>
+            <button type="button" class="dz-atlas-filter" data-region="Magway">Magway</button>
+          </div>
+
+          <div class="dz-atlas-count">
+            <strong id="atlasCount">09</strong>
+            <span>REFERENCE TOWNS</span>
+          </div>
+
+          <div class="dz-atlas-town-list" id="atlasTownList">
+            <!-- JavaScript generates the town buttons -->
+          </div>
+
+          <p class="dz-atlas-disclaimer">
+            These markers show geographical reference locations.
+            They do not represent live drought conditions
+            or measured risk levels.
+          </p>
+
+        </aside>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- NINE TOWN EXPLORER -->
+  <section class="dz-explorer dz-space" id="explorer">
+    <div class="container">
+
+      <div class="dz-explorer-heading">
+        <div>
+          <span class="dz-eyebrow">04 / REGIONAL EXPLORER</span>
+          <h2 class="dz-title">Exploring Towns in Myanmar's Central Dry Zone</h2>
+        </div>
+
+        <p>
+          Although these regions share relatively dry climatic conditions,
+          their water resources, agricultural activities and community
+          needs are not exactly the same. Explore nine selected towns
+          to understand their geography, water requirements,
+          possible challenges and practical preparedness measures.
+        </p>
+      </div>
+
+      <!-- SAGAING -->
+      <div class="dz-region-block" id="sagaing">
+
+        <div class="dz-region-heading">
+          <div class="dz-region-symbol">01</div>
+          <div>
+            <span class="dz-region-overline">NORTHERN & CENTRAL MYANMAR</span>
+            <h3>Sagaing Region</h3>
+            <p>Monywa · Shwebo · Salingyi</p>
+          </div>
+          <span class="dz-region-count">03 TOWNS</span>
+        </div>
+
+        <div class="accordion dz-accordion" id="sagaingAccordion">
+
+          <div class="accordion-item">
+            <h4 class="accordion-header">
+              <button class="accordion-button" type="button"
+                data-bs-toggle="collapse" data-bs-target="#townMonywa">
+                <span class="dz-town-index">01</span>
+                <span class="dz-town-name">Monywa</span>
+                <span class="dz-town-tag">RIVER & AGRICULTURE</span>
+              </button>
+            </h4>
+
+            <div id="townMonywa" class="accordion-collapse collapse show"
+              data-bs-parent="#sagaingAccordion">
+              <div class="accordion-body">
+
+                <p>
+                  Monywa is situated beside the Chindwin River in Sagaing Region.
+                  The river is an important geographical feature and a potential
+                  water source for surrounding communities. However, being near
+                  a river does not always guarantee reliable access to clean
+                  drinking water. Households, farms and businesses all need
+                  water throughout the year.
+                </p>
+
+                <div class="dz-fact-grid">
+                  <div>
+                    <strong>Water Needs</strong>
+                    <span>Drinking, cooking, sanitation, farming and irrigation.</span>
+                  </div>
+                  <div>
+                    <strong>Potential Challenges</strong>
+                    <span>Irregular rainfall, limited treated water and poorly maintained distribution systems.</span>
+                  </div>
+                  <div>
+                    <strong>Preparedness</strong>
+                    <span>Inspect water facilities, protect stored drinking water, repair leaks and improve irrigation efficiency.</span>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <h4 class="accordion-header">
+              <button class="accordion-button collapsed" type="button"
+                data-bs-toggle="collapse" data-bs-target="#townShwebo">
+                <span class="dz-town-index">02</span>
+                <span class="dz-town-name">Shwebo</span>
+                <span class="dz-town-tag">FARMING & IRRIGATION</span>
+              </button>
+            </h4>
+
+            <div id="townShwebo" class="accordion-collapse collapse"
+              data-bs-parent="#sagaingAccordion">
+              <div class="accordion-body">
+
+                <p>
+                  Shwebo is an important agricultural town in Sagaing Region.
+                  Farming depends on seasonal rainfall and suitable irrigation
+                  supplies. When rainfall arrives later than expected,
+                  farmers may need to adjust their planting activities
+                  and water management methods.
+                </p>
+
+                <div class="dz-fact-grid">
+                  <div>
+                    <strong>Water Needs</strong>
+                    <span>Crop cultivation, irrigation, livestock care and households.</span>
+                  </div>
+                  <div>
+                    <strong>Potential Challenges</strong>
+                    <span>Delayed monsoon rainfall, soil moisture loss and limited water storage.</span>
+                  </div>
+                  <div>
+                    <strong>Preparedness</strong>
+                    <span>Maintain irrigation channels, monitor rainfall and use suitable water-saving methods.</span>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <h4 class="accordion-header">
+              <button class="accordion-button collapsed" type="button"
+                data-bs-toggle="collapse" data-bs-target="#townSalingyi">
+                <span class="dz-town-index">03</span>
+                <span class="dz-town-name">Salingyi</span>
+                <span class="dz-town-tag">COMMUNITY SUPPLIES</span>
+              </button>
+            </h4>
+
+            <div id="townSalingyi" class="accordion-collapse collapse"
+              data-bs-parent="#sagaingAccordion">
+              <div class="accordion-body">
+
+                <p>
+                  Salingyi is located in lower Sagaing Region.
+                  Rural households and agricultural communities may depend
+                  on wells, ponds, stored rainwater and other local sources.
+                  Their reliability can change with seasonal rainfall,
+                  infrastructure conditions and water demand.
+                </p>
+
+                <div class="dz-fact-grid">
+                  <div>
+                    <strong>Water Needs</strong>
+                    <span>Household drinking water, hygiene, cooking and agriculture.</span>
+                  </div>
+                  <div>
+                    <strong>Potential Challenges</strong>
+                    <span>Limited storage, unreliable sources and possible water contamination.</span>
+                  </div>
+                  <div>
+                    <strong>Preparedness</strong>
+                    <span>Inspect wells, protect water sources and use clean covered storage containers.</span>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- MANDALAY -->
+      <div class="dz-region-block" id="mandalay">
+
+        <div class="dz-region-heading">
+          <div class="dz-region-symbol">02</div>
+          <div>
+            <span class="dz-region-overline">CENTRAL DRY ZONE</span>
+            <h3>Mandalay Region</h3>
+            <p>Myingyan · Nyaung-U · Kyaukpadaung</p>
+          </div>
+          <span class="dz-region-count">03 TOWNS</span>
+        </div>
+
+        <div class="accordion dz-accordion" id="mandalayAccordion">
+
+          <div class="accordion-item">
+            <h4 class="accordion-header">
+              <button class="accordion-button" type="button"
+                data-bs-toggle="collapse" data-bs-target="#townMyingyan">
+                <span class="dz-town-index">04</span>
+                <span class="dz-town-name">Myingyan</span>
+                <span class="dz-town-tag">WATER MANAGEMENT</span>
+              </button>
+            </h4>
+
+            <div id="townMyingyan" class="accordion-collapse collapse show"
+              data-bs-parent="#mandalayAccordion">
+              <div class="accordion-body">
+
+                <p>
+                  Myingyan is located in Mandalay Region and is associated
+                  with Myanmar's Central Dry Zone. Seasonal rainfall plays
+                  an important role in farming. Wells, reservoirs and
+                  irrigation facilities can provide additional water
+                  where available. Water management matters during long dry periods.
+                </p>
+
+                <div class="dz-fact-grid">
+                  <div>
+                    <strong>Water Needs</strong>
+                    <span>Rain-fed farming, irrigated agriculture, livestock and households.</span>
+                  </div>
+                  <div>
+                    <strong>Potential Challenges</strong>
+                    <span>Irregular rainfall, reduced soil moisture and inefficient irrigation.</span>
+                  </div>
+                  <div>
+                    <strong>Preparedness</strong>
+                    <span>Maintain storage systems, conserve soil moisture and improve irrigation practices.</span>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <h4 class="accordion-header">
+              <button class="accordion-button collapsed" type="button"
+                data-bs-toggle="collapse" data-bs-target="#townNyaungu">
+                <span class="dz-town-index">05</span>
+                <span class="dz-town-name">Nyaung-U</span>
+                <span class="dz-town-tag">SEASONAL DEMAND</span>
+              </button>
+            </h4>
+
+            <div id="townNyaungu" class="accordion-collapse collapse"
+              data-bs-parent="#mandalayAccordion">
+              <div class="accordion-body">
+
+                <p>
+                  Nyaung-U is near the historic Bagan area in Mandalay Region.
+                  Water is needed by households, farms, accommodation
+                  facilities, businesses and public services.
+                  Reliable distribution and storage systems are important
+                  for managing demand during the drier months.
+                </p>
+
+                <div class="dz-fact-grid">
+                  <div>
+                    <strong>Water Needs</strong>
+                    <span>Residents, farms, schools, businesses and visitor facilities.</span>
+                  </div>
+                  <div>
+                    <strong>Potential Challenges</strong>
+                    <span>Seasonal demand, leaking pipes and insufficient water storage.</span>
+                  </div>
+                  <div>
+                    <strong>Preparedness</strong>
+                    <span>Repair leaks, maintain storage facilities and encourage responsible water use.</span>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <h4 class="accordion-header">
+              <button class="accordion-button collapsed" type="button"
+                data-bs-toggle="collapse" data-bs-target="#townKyaukpadaung">
+                <span class="dz-town-index">06</span>
+                <span class="dz-town-name">Kyaukpadaung</span>
+                <span class="dz-town-tag">RAINWATER & FARMING</span>
+              </button>
+            </h4>
+
+            <div id="townKyaukpadaung" class="accordion-collapse collapse"
+              data-bs-parent="#mandalayAccordion">
+              <div class="accordion-body">
+
+                <p>
+                  Kyaukpadaung is situated near Mount Popa in Mandalay Region.
+                  Its surroundings include agricultural communities that
+                  depend on seasonal rainfall and available local water
+                  sources. Geography can influence water availability,
+                  even within the same township.
+                </p>
+
+                <div class="dz-fact-grid">
+                  <div>
+                    <strong>Water Needs</strong>
+                    <span>Agriculture, livestock, households and community facilities.</span>
+                  </div>
+                  <div>
+                    <strong>Potential Challenges</strong>
+                    <span>Unpredictable rainfall, declining soil moisture and limited storage.</span>
+                  </div>
+                  <div>
+                    <strong>Preparedness</strong>
+                    <span>Protect ponds and reservoirs, inspect wells and improve soil moisture conservation.</span>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- MAGWAY -->
+      <div class="dz-region-block" id="magway">
+
+        <div class="dz-region-heading">
+          <div class="dz-region-symbol">03</div>
+          <div>
+            <span class="dz-region-overline">CENTRAL & WESTERN MYANMAR</span>
+            <h3>Magway Region</h3>
+            <p>Pakokku · Chauk · Magway</p>
+          </div>
+          <span class="dz-region-count">03 TOWNS</span>
+        </div>
+
+        <div class="accordion dz-accordion" id="magwayAccordion">
+
+          <div class="accordion-item">
+            <h4 class="accordion-header">
+              <button class="accordion-button" type="button"
+                data-bs-toggle="collapse" data-bs-target="#townPakokku">
+                <span class="dz-town-index">07</span>
+                <span class="dz-town-name">Pakokku</span>
+                <span class="dz-town-tag">RIVER & HOUSEHOLDS</span>
+              </button>
+            </h4>
+
+            <div id="townPakokku" class="accordion-collapse collapse show"
+              data-bs-parent="#magwayAccordion">
+              <div class="accordion-body">
+
+                <p>
+                  Pakokku is located in northern Magway Region near the
+                  Ayeyarwady River. Although the river is an important
+                  water resource, nearby communities still need suitable
+                  systems to obtain, treat and distribute safe water.
+                  Dependable storage helps manage seasonal pressure.
+                </p>
+
+                <div class="dz-fact-grid">
+                  <div>
+                    <strong>Water Needs</strong>
+                    <span>Households, crop production, sanitation and businesses.</span>
+                  </div>
+                  <div>
+                    <strong>Potential Challenges</strong>
+                    <span>Unequal water access, damaged infrastructure and water quality concerns.</span>
+                  </div>
+                  <div>
+                    <strong>Preparedness</strong>
+                    <span>Protect drinking-water sources, maintain tanks and identify alternative supplies.</span>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <h4 class="accordion-header">
+              <button class="accordion-button collapsed" type="button"
+                data-bs-toggle="collapse" data-bs-target="#townChauk">
+                <span class="dz-town-index">08</span>
+                <span class="dz-town-name">Chauk</span>
+                <span class="dz-town-tag">DRY-SEASON PLANNING</span>
+              </button>
+            </h4>
+
+            <div id="townChauk" class="accordion-collapse collapse"
+              data-bs-parent="#magwayAccordion">
+              <div class="accordion-body">
+
+                <p>
+                  Chauk is situated in Magway Region and experiences
+                  seasonal differences between wetter monsoon months
+                  and relatively dry periods. Homes, workplaces and
+                  agriculture need water throughout the year.
+                  Preparing before shortages can protect essential activities.
+                </p>
+
+                <div class="dz-fact-grid">
+                  <div>
+                    <strong>Water Needs</strong>
+                    <span>Drinking, cooking, sanitation, workplaces and agriculture.</span>
+                  </div>
+                  <div>
+                    <strong>Potential Challenges</strong>
+                    <span>Long dry spells, inefficient water use and limited storage.</span>
+                  </div>
+                  <div>
+                    <strong>Preparedness</strong>
+                    <span>Inspect wells and tanks, repair leaks and prepare essential household water plans.</span>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion-item">
+            <h4 class="accordion-header">
+              <button class="accordion-button collapsed" type="button"
+                data-bs-toggle="collapse" data-bs-target="#townMagway">
+                <span class="dz-town-index">09</span>
+                <span class="dz-town-name">Magway</span>
+                <span class="dz-town-tag">URBAN WATER DEMAND</span>
+              </button>
+            </h4>
+
+            <div id="townMagway" class="accordion-collapse collapse"
+              data-bs-parent="#magwayAccordion">
+              <div class="accordion-body">
+
+                <p>
+                  Magway is an important urban centre near the Ayeyarwady River.
+                  Homes, schools, healthcare facilities, businesses and
+                  agricultural communities all require dependable water.
+                  Reliable infrastructure is important because supply
+                  interruptions may affect public services and daily life.
+                </p>
+
+                <div class="dz-fact-grid">
+                  <div>
+                    <strong>Water Needs</strong>
+                    <span>Homes, schools, hospitals, businesses and agriculture.</span>
+                  </div>
+                  <div>
+                    <strong>Potential Challenges</strong>
+                    <span>High demand, ageing distribution systems and supply interruptions.</span>
+                  </div>
+                  <div>
+                    <strong>Preparedness</strong>
+                    <span>Maintain distribution systems, repair leaks and prepare water arrangements for essential facilities.</span>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="dz-regional-insight">
+        <span class="dz-eyebrow">UNDERSTANDING REGIONAL DIFFERENCES</span>
+        <h3>Why Do Water Challenges Differ Between Towns?</h3>
+
+        <p>
+          Although these nine towns are in the broader Central Dry Zone,
+          their water availability is influenced by different geographical
+          and human factors. Towns near major rivers may have access to
+          significant water resources, while others depend more heavily
+          on wells, reservoirs, ponds and seasonal rainfall.
+        </p>
+
+        <p>
+          Farming communities may need additional irrigation during dry
+          conditions. Urban areas require dependable water supplies for
+          households, schools, businesses and healthcare facilities.
+          Understanding these differences helps communities plan ahead.
+        </p>
+      </div>
+
+      <p class="dz-explorer-note">
+        <i class="bi bi-info-circle"></i>
+        These are educational reference profiles, not live drought
+        reports or verified assessments of current conditions.
+      </p>
+
+    </div>
+  </section>
+
+  <!-- SEASONAL RAINFALL -->
+  <section class="dz-seasons dz-space" id="climate">
+    <div class="container">
+
+      <div class="dz-section-intro">
+        <span class="dz-eyebrow">05 / SEASONAL PATTERNS</span>
+        <h2 class="dz-title">Rainfall Throughout the Year</h2>
+        <p>
+          The Central Dry Zone generally has a wetter monsoon period
+          and a drier part of the year. These are broad seasonal
+          patterns, not monthly rainfall measurements or forecasts.
+        </p>
+      </div>
+
+      <div class="dz-season-calendar">
+        <div class="dz-season-month dry">JAN<span>DRY</span></div>
+        <div class="dz-season-month dry">FEB<span>DRY</span></div>
+        <div class="dz-season-month dry">MAR<span>DRY</span></div>
+        <div class="dz-season-month dry">APR<span>DRY</span></div>
+        <div class="dz-season-month wet">MAY<span>MONSOON</span></div>
+        <div class="dz-season-month wet">JUN<span>MONSOON</span></div>
+        <div class="dz-season-month wet">JUL<span>MONSOON</span></div>
+        <div class="dz-season-month wet">AUG<span>MONSOON</span></div>
+        <div class="dz-season-month wet">SEP<span>MONSOON</span></div>
+        <div class="dz-season-month wet">OCT<span>MONSOON</span></div>
+        <div class="dz-season-month dry">NOV<span>DRY</span></div>
+        <div class="dz-season-month dry">DEC<span>DRY</span></div>
+      </div>
+
+      <div class="row g-4 mt-4">
+
+        <div class="col-md-6">
+          <article class="dz-season-card">
+            <span class="dz-season-icon wet-icon">
+              <i class="bi bi-cloud-rain"></i>
+            </span>
+            <h3>The Wetter Months</h3>
+            <p>
+              Monsoon rainfall helps replenish soil moisture,
+              reservoirs and other water sources. Rainfall amounts
+              still vary between towns and years.
+            </p>
+            <strong>MAY — OCTOBER</strong>
+          </article>
+        </div>
+
+        <div class="col-md-6">
+          <article class="dz-season-card">
+            <span class="dz-season-icon dry-icon">
+              <i class="bi bi-sun"></i>
+            </span>
+            <h3>The Drier Months</h3>
+            <p>
+              Lower rainfall makes stored water and dependable
+              sources more important. Communities can prepare
+              by checking supplies and avoiding unnecessary waste.
+            </p>
+            <strong>NOVEMBER — APRIL</strong>
+          </article>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- COMMUNITY PREPAREDNESS -->
+  <section class="dz-preparedness dz-space" id="preparedness">
+    <div class="container">
+
+      <div class="dz-preparedness-heading">
+        <span class="dz-eyebrow">06 / COMMUNITY RESILIENCE</span>
+        <h2 class="dz-title">Water Shortage Challenges and Preparedness</h2>
+
+        <p>
+          Water shortages can affect farming, household activities,
+          health, education and local businesses. Communities with
+          limited storage or unreliable sources may face greater
+          difficulties during prolonged dry periods.
+        </p>
+
+        <p>
+          Preparing early through better water management,
+          safe storage, regular maintenance and community awareness
+          can help protect essential daily activities.
+        </p>
+      </div>
+
+      <div class="row g-4">
+
+        <div class="col-lg-4 col-md-6">
+          <article class="dz-prep-card">
+            <i class="bi bi-droplet"></i>
+            <h3>Reliable Water Access</h3>
+            <p>
+              Identify available sources such as wells, ponds,
+              reservoirs and public systems. Inspect them regularly
+              to detect damage and declining supplies.
+            </p>
+          </article>
+        </div>
+
+        <div class="col-lg-4 col-md-6">
+          <article class="dz-prep-card">
+            <i class="bi bi-shield-check"></i>
+            <h3>Safe Drinking Water</h3>
+            <p>
+              Protect drinking water from contamination,
+              use clean covered containers and follow
+              reliable guidance on water treatment.
+            </p>
+          </article>
+        </div>
+
+        <div class="col-lg-4 col-md-6">
+          <article class="dz-prep-card">
+            <i class="bi bi-flower1"></i>
+            <h3>Agricultural Planning</h3>
+            <p>
+              Consider seasonal rainfall, crop requirements
+              and irrigation supplies. Suitable methods can
+              reduce unnecessary water loss.
+            </p>
+          </article>
+        </div>
+
+        <div class="col-lg-4 col-md-6">
+          <article class="dz-prep-card">
+            <i class="bi bi-buildings"></i>
+            <h3>Schools and Community Facilities</h3>
+            <p>
+              Schools, clinics and other facilities need reliable
+              water for drinking, hygiene and sanitation.
+              Storage and alternative supply plans are important.
+            </p>
+          </article>
+        </div>
+
+        <div class="col-lg-4 col-md-6">
+          <article class="dz-prep-card">
+            <i class="bi bi-tools"></i>
+            <h3>Water Conservation and Maintenance</h3>
+            <p>
+              Repair leaking taps and pipes, inspect tanks
+              and encourage efficient water use to reduce waste.
+            </p>
+          </article>
+        </div>
+
+        <div class="col-lg-4 col-md-6">
+          <article class="dz-prep-card">
+            <i class="bi bi-people"></i>
+            <h3>Community Awareness</h3>
+            <p>
+              Schools and community groups can share advice
+              about water-saving habits, safe storage,
+              local conditions and early preparedness.
+            </p>
+          </article>
+        </div>
+
+      </div>
+
+      <div class="dz-next-step">
+        <div>
+          <span>CONTINUE EXPLORING HYDRIX</span>
+          <h3>Learn practical ways to reduce water waste.</h3>
+        </div>
+
+        <a href="conservation.html">
+          EXPLORE WATER SAVING
+          <i class="bi bi-arrow-up-right"></i>
+        </a>
+      </div>
+
+    </div>
+  </section>
+
+</main>
+
+<!-- FOOTER -->
+<footer class="footer-main">
+  <div class="container">
+
+    <div class="footer-contact">
+      <div class="footer-contact-content">
+        <span class="footer-label">
+          <i class="bi bi-chat-left-text"></i>
+          CONTACT THE HYDRIX TEAM
+        </span>
+
+        <h2>Have a Question About Our Project?</h2>
+        <p>
+          We'd be happy to hear your questions about our research,
+          the information on HYDRIX, or suggestions for our website.
+        </p>
+      </div>
+
+      <a href="contact.html" class="footer-contact-button">
+        CONTACT US <i class="bi bi-arrow-up-right"></i>
+      </a>
+    </div>
+
+    <div class="footer-navigation">
+
+      <div class="footer-about">
+        <a href="index.html" class="footer-logo">
+          <img src="images/logo.png" alt="HYDRIX logo">
+          <span>HYDRIX</span>
+        </a>
+
+        <p>
+          An educational website about drought, water shortages,
+          conservation and preparing communities before water
+          supplies become limited.
+        </p>
+
+        <span class="footer-project-tag">
+          DISASTER RISK REDUCTION / BEFORE
+        </span>
+      </div>
+
+      <div class="footer-links-group">
+        <h3>EXPLORE</h3>
+        <a href="index.html">Home</a>
+        <a href="drought.html">Understanding Drought</a>
+        <a href="dryzone.html">Myanmar's Dry Zone</a>
+      </div>
+
+      <div class="footer-links-group">
+        <h3>PREPARE & LEARN</h3>
+        <a href="conservation.html">Water Conservation</a>
+        <a href="preparedness.html">Drought Preparedness</a>
+        <a href="faq.html">FAQs</a>
+      </div>
+
+      <div class="footer-links-group">
+        <h3>HYDRIX PROJECT</h3>
+        <a href="about.html">About Us</a>
+        <a href="about.html#team">Meet the Team</a>
+        <a href="privacy.html">Privacy Policy</a>
+      </div>
+
+    </div>
+
+    <div class="footer-resources">
+      <div class="footer-resources-info">
+        <span class="footer-resources-label">
+          <i class="bi bi-folder2-open"></i>
+          PROJECT RESOURCES
+        </span>
+        <p>Explore our references or download the HYDRIX report.</p>
+      </div>
+
+      <div class="footer-downloads">
+        <a href="citations.html" class="footer-resource-button">
+          <i class="bi bi-journal-text"></i>
+          CITATION PAGE
+          <i class="bi bi-arrow-up-right"></i>
+        </a>
+
+        <a href="docs/HYDRIX_Report.docx"
+           class="footer-resource-button footer-resource-filled"
+           download>
+          <i class="bi bi-file-earmark-word"></i>
+          DOWNLOAD WORD FILE
+          <i class="bi bi-download"></i>
+        </a>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <span>HYDRIX / YEAR 9 ICT PBL PROJECT</span>
+      <p>© 2026 HYDRIX. All Rights Reserved.</p>
+    </div>
+
+  </div>
+</footer>
+
+<!-- LIBRARIES -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<!-- WATER SCARCITY ATLAS JAVASCRIPT -->
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  "use strict";
+
+  const towns = [
+    {
+      name: "Monywa",
+      region: "Sagaing",
+      lat: 22.1086,
+      lng: 95.1358,
+      target: "townMonywa",
+      needs: "Household water, farming and irrigation",
+      challenge: "Seasonal rainfall and reliable water access"
+    },
+    {
+      name: "Shwebo",
+      region: "Sagaing",
+      lat: 22.5693,
+      lng: 95.6982,
+      target: "townShwebo",
+      needs: "Crop cultivation and irrigation",
+      challenge: "Delayed rainfall and soil moisture loss"
+    },
+    {
+      name: "Salingyi",
+      region: "Sagaing",
+      lat: 21.9731,
+      lng: 95.0819,
+      target: "townSalingyi",
+      needs: "Household and agricultural supplies",
+      challenge: "Water storage and safe drinking water"
+    },
+    {
+      name: "Myingyan",
+      region: "Mandalay",
+      lat: 21.4600,
+      lng: 95.3900,
+      target: "townMyingyan",
+      needs: "Farming, livestock and household water",
+      challenge: "Irregular rainfall and irrigation efficiency"
+    },
+    {
+      name: "Nyaung-U",
+      region: "Mandalay",
+      lat: 21.2006,
+      lng: 94.9083,
+      target: "townNyaungu",
+      needs: "Households, businesses and public services",
+      challenge: "Seasonal demand and storage capacity"
+    },
+    {
+      name: "Kyaukpadaung",
+      region: "Mandalay",
+      lat: 20.8416,
+      lng: 95.1267,
+      target: "townKyaukpadaung",
+      needs: "Farming, livestock and household water",
+      challenge: "Seasonal rainfall and storage"
+    },
+    {
+      name: "Pakokku",
+      region: "Magway",
+      lat: 21.3349,
+      lng: 95.0844,
+      target: "townPakokku",
+      needs: "Household water, irrigation and businesses",
+      challenge: "Reliable supply and drinking-water quality"
+    },
+    {
+      name: "Chauk",
+      region: "Magway",
+      lat: 20.8992,
+      lng: 94.8178,
+      target: "townChauk",
+      needs: "Households, workplaces and farming",
+      challenge: "Long dry spells and water storage"
+    },
+    {
+      name: "Magway",
+      region: "Magway",
+      lat: 20.1496,
+      lng: 94.9325,
+      target: "townMagway",
+      needs: "Homes, schools, hospitals and businesses",
+      challenge: "Urban water demand and distribution"
+    }
+  ];
+
+  const mapElement = document.getElementById("dryZoneMap");
+  const townList = document.getElementById("atlasTownList");
+  const count = document.getElementById("atlasCount");
+  const filters = document.querySelectorAll(".dz-atlas-filter");
+  const errorBox = document.getElementById("atlasError");
+
+  if (!mapElement || !townList || !count) return;
+
+  let map = null;
+  let markerLayer = null;
+  const markers = new Map();
+  let activeTown = "";
+
+  function openProfile(town) {
+    const content = document.getElementById(town.target);
+    if (!content) return;
+
+    if (window.bootstrap && window.bootstrap.Collapse) {
+      window.bootstrap.Collapse.getOrCreateInstance(content, {
+        toggle: false
+      }).show();
+    } else {
+      content.classList.add("show");
+    }
+
+    const item = content.closest(".accordion-item");
+
+    setTimeout(() => {
+      (item || content).scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
+    }, 150);
+  }
+
+  function createPopup(town) {
+    return `
+      <div class="dz-atlas-popup">
+        <small>${town.region.toUpperCase()} REGION</small>
+        <h3>${town.name}</h3>
+
+        <p>
+          <strong>Water needs:</strong><br>
+          ${town.needs}
+        </p>
+
+        <p>
+          <strong>Possible challenges:</strong><br>
+          ${town.challenge}
+        </p>
+
+        <a href="#${town.target}"
+           class="dz-atlas-profile-link">
+           READ TOWN PROFILE ↗
+        </a>
+      </div>
+    `;
+  }
+
+  function refreshSelection() {
+    townList.querySelectorAll(".dz-atlas-town")
+      .forEach(button => {
+        button.classList.toggle(
+          "active",
+          button.dataset.town === activeTown
+        );
+      });
+  }
+
+  function selectTown(town) {
+    activeTown = town.name;
+    refreshSelection();
+
+    if (!map) {
+      openProfile(town);
+      return;
+    }
+
+    map.flyTo([town.lat, town.lng], 10, {
+      duration: 0.6
+    });
+
+    const marker = markers.get(town.name);
+    if (marker) marker.openPopup();
+  }
+
+  function renderRegion(region) {
+    const selected = towns.filter(town =>
+      region === "all" || town.region === region
+    );
+
+    count.textContent =
+      String(selected.length).padStart(2, "0");
+
+    activeTown = "";
+    townList.replaceChildren();
+
+    if (markerLayer) markerLayer.clearLayers();
+
+    selected.forEach(town => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "dz-atlas-town";
+      button.dataset.town = town.name;
+
+      const name = document.createElement("span");
+      name.textContent = town.name;
+
+      const regionLabel = document.createElement("small");
+      regionLabel.textContent = town.region;
+
+      button.append(name, regionLabel);
+
+      button.addEventListener("click", () => {
+        selectTown(town);
+      });
+
+      townList.append(button);
+
+      const marker = markers.get(town.name);
+      if (marker && markerLayer) {
+        marker.addTo(markerLayer);
+      }
+    });
+
+    filters.forEach(button => {
+      const selectedButton = button.dataset.region === region;
+
+      button.classList.toggle("active", selectedButton);
+      button.setAttribute(
+        "aria-pressed",
+        String(selectedButton)
+      );
+    });
+
+    if (map && selected.length) {
+      map.fitBounds(
+        selected.map(town => [town.lat, town.lng]),
+        {
+          padding: [35, 35],
+          maxZoom: 9
+        }
+      );
+    }
+  }
+
+  filters.forEach(button => {
+    button.addEventListener("click", () => {
+      renderRegion(button.dataset.region);
+    });
+  });
+
+  // Show the town list even if the map library fails.
+  renderRegion("all");
+
+  if (typeof window.L === "undefined") {
+    errorBox.hidden = false;
+
+    console.error(
+      "HYDRIX Atlas: Leaflet did not load."
+    );
+
+    return;
+  }
+
+  try {
+    map = window.L.map(mapElement, {
+      scrollWheelZoom: false,
+      zoomControl: true
+    });
+
+    window.L.tileLayer(
+      "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+      {
+        maxZoom: 19,
+        attribution:
+          '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+      }
+    ).addTo(map);
+
+    markerLayer = window.L.layerGroup().addTo(map);
+
+    towns.forEach(town => {
+      const marker = window.L.circleMarker(
+        [town.lat, town.lng],
+        {
+          radius: 8,
+          color: "#ffffff",
+          weight: 2,
+          fillColor: "#315f91",
+          fillOpacity: 1
+        }
+      );
+
+      marker.bindPopup(createPopup(town), {
+        maxWidth: 280
+      });
+
+      marker.on("click", () => {
+        activeTown = town.name;
+        refreshSelection();
+      });
+
+      marker.on("popupopen", event => {
+        const popup = event.popup.getElement();
+
+        const link = popup
+          ? popup.querySelector(".dz-atlas-profile-link")
+          : null;
+
+        if (link) {
+          link.addEventListener("click", e => {
+            e.preventDefault();
+            openProfile(town);
+          });
+        }
+      });
+
+      markers.set(town.name, marker);
+    });
+
+    renderRegion("all");
+
+    requestAnimationFrame(() => {
+      map.invalidateSize();
+    });
+
+    window.addEventListener("resize", () => {
+      map.invalidateSize();
+    });
+
+  } catch (error) {
+    console.error(
+      "HYDRIX Atlas failed to initialize:",
+      error
+    );
+
+    errorBox.hidden = false;
+    map = null;
+    markerLayer = null;
+    markers.clear();
+  }
+});
+</script>
+
+</body>
+</html>

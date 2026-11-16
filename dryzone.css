@@ -940,3 +940,216 @@ body.dryzone-page {
     animation-duration: .01ms !important;
   }
 }
+
+
+/* WATER SCARCITY ATLAS */
+
+.dz-atlas {
+  background: #f4f7fa;
+}
+
+.dz-atlas-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: 36px;
+  margin-bottom: 32px;
+}
+
+.dz-atlas-heading > div {
+  flex: 1;
+}
+
+.dz-atlas-heading > p {
+  max-width: 430px;
+  color: #617184;
+  line-height: 1.8;
+  margin: 0;
+}
+
+.dz-atlas-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 305px;
+  background: #fff;
+  border: 1px solid #dce5ed;
+  border-radius: 18px;
+  overflow: hidden;
+}
+
+.dz-atlas-map-wrap {
+  min-width: 0;
+  background: #e5edf3;
+}
+
+#dryZoneMap {
+  width: 100%;
+  height: 570px;
+  z-index: 1;
+}
+
+.dz-atlas-sidebar {
+  padding: 24px;
+  border-left: 1px solid #dce5ed;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.dz-atlas-small {
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  font-weight: 700;
+  color: #68798b;
+}
+
+.dz-atlas-filters {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px;
+}
+
+.dz-atlas-filter {
+  border: 1px solid #dbe4ec;
+  border-radius: 7px;
+  background: #fff;
+  color: #344a61;
+  padding: 10px 5px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.dz-atlas-filter:hover,
+.dz-atlas-filter.active {
+  background: #223a5e;
+  border-color: #223a5e;
+  color: #fff;
+}
+
+.dz-atlas-count {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  border-bottom: 1px solid #e6edf2;
+  padding-bottom: 14px;
+}
+
+.dz-atlas-count strong {
+  font-size: 32px;
+  color: #223a5e;
+  font-weight: 500;
+}
+
+.dz-atlas-count span {
+  font-size: 10px;
+  letter-spacing: 1.1px;
+  color: #8795a3;
+}
+
+.dz-atlas-town-list {
+  max-height: 260px;
+  overflow-y: auto;
+  display: grid;
+  align-content: start;
+  gap: 5px;
+}
+
+.dz-atlas-town {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  border: 1px solid transparent;
+  background: #f5f8fa;
+  border-radius: 7px;
+  color: #243b52;
+  cursor: pointer;
+  text-align: left;
+}
+
+.dz-atlas-town:hover,
+.dz-atlas-town.active {
+  background: #e7eff7;
+  border-color: #c3d6e8;
+}
+
+.dz-atlas-town span {
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.dz-atlas-town small {
+  color: #73869a;
+  font-size: 11px;
+}
+
+.dz-atlas-disclaimer {
+  margin: auto 0 0;
+  color: #8291a0;
+  font-size: 11px;
+  line-height: 1.7;
+}
+
+.dz-atlas-popup h3 {
+  font-size: 17px;
+  margin: 5px 0 9px;
+  color: #223a5e;
+}
+
+.dz-atlas-popup small {
+  color: #71849a;
+  font-weight: 600;
+}
+
+.dz-atlas-popup p {
+  margin: 8px 0;
+  line-height: 1.5;
+  font-size: 12px;
+}
+
+.dz-atlas-popup a {
+  display: inline-block;
+  margin-top: 8px;
+  color: #315f91;
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.dz-atlas-popup a:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 991px) {
+  .dz-atlas-heading {
+    display: block;
+  }
+
+  .dz-atlas-heading > p {
+    max-width: 100%;
+    margin-top: 16px;
+  }
+
+  .dz-atlas-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .dz-atlas-sidebar {
+    border-left: none;
+    border-top: 1px solid #dce5ed;
+  }
+
+  #dryZoneMap {
+    height: 400px;
+  }
+
+  .dz-atlas-town-list {
+    max-height: 230px;
+  }
+}
+
+@media (max-width: 576px) {
+  #dryZoneMap {
+    height: 340px;
+  }
+}
